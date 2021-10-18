@@ -26,6 +26,11 @@ func NewUserList(db *db.DynamoDB) *UserList {
 
 func (u *UserList) GetUserLists(userId string) ([]model.UserProductListInfo, error) {
 
+	//TODO: delete info log
+	log.WithFields(log.Fields{
+		"userId": userId,
+	}).Info("GetUserLists")
+
 	listInfo := make([]model.UserProductListInfo, 0)
 
 	client, err := u.database.GetClient()
@@ -61,7 +66,7 @@ func (u *UserList) GetUserLists(userId string) ([]model.UserProductListInfo, err
 	return userLists.ProductLists, nil
 }
 
-func (u *UserList) AddListToUser(userId string, list model.UserProductListInfo) error {
+func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListInfo) error {
 
 	client, err := u.database.GetClient()
 
@@ -69,10 +74,16 @@ func (u *UserList) AddListToUser(userId string, list model.UserProductListInfo) 
 		return err
 	}
 
-	//TODO: добавить проверку наличия листа
+	productLists, err := u.GetUserLists(userId)
 
-	userList := model.UserLists{UserId: userId, ProductLists: []model.UserProductListInfo{list}}
-	
+	if err != nil{
+		return fmt.Errorf("getting user information failed, %w", err)
+	}
+
+	productLists = append(productLists, listInfo)
+
+	userList := model.UserLists{UserId: userId, ProductLists: productLists}
+
 	av, err := attributevalue.MarshalMap(userList)
 	if err != nil {
 		return fmt.Errorf("failed to marshal Record, %w", err)
@@ -89,12 +100,8 @@ func (u *UserList) AddListToUser(userId string, list model.UserProductListInfo) 
 
 	log.WithFields(log.Fields{
 		"userId": userId,
-		"listName": list.Name,
+		"listName": listInfo.Name,
 	}).Info("List was linked")
 
-	return nil
-}
-
-func (u *UserList) LinkListToUser(listId string, userId string) error{
 	return nil
 }

@@ -18,6 +18,6 @@ func (u *UserListService) GetUserLists(userId string) ([]model.UserProductListIn
 	return u.repo.GetUserLists(userId)
 }
 //TODO: Реализовать!!!
-func (u *UserListService) LinkListToUser(listId string, userId string) error {
-	return u.repo.LinkListToUser(listId, userId)
+func (u *UserListService) LinkListToUser(userId string, listInfo model.UserProductListInfo) error {
+	return u.repo.LinkListToUser(userId, listInfo)
 }

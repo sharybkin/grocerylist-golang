@@ -1,31 +1,13 @@
 package handler
 
 import (
+	"github.com/sharybkin/grocerylist-golang/internal/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) getAllProductLists(c *gin.Context) {
-	id, err := getUserId(c)
-
-	if err != nil {
-		//Response Body was formed inside getUserId
-		return
-	}
-
-	lists, err := h.services.ProductList.GetAllProductLists(id)
-
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, "", "getAllProductLists")
-	}
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"lists": lists,
-	})
-
-}
-
-func (h *Handler) getProductListsInfo(c *gin.Context) {
+func (h *Handler) getUserLists(c *gin.Context) {
 	userId, err := getUserId(c)
 
 	if err != nil {
@@ -35,7 +17,8 @@ func (h *Handler) getProductListsInfo(c *gin.Context) {
 	listsInfo, err := h.services.UserLists.GetUserLists(userId)
 
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, "", "getProductListsInfo")
+		newErrorResponse(c, http.StatusInternalServerError, err.Error(), "getUserLists")
+		return
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
@@ -56,5 +39,33 @@ func (h *Handler) deleteProductList(c *gin.Context) {
 }
 
 func (h *Handler) createProductList(c *gin.Context) {
+	userId, err := getUserId(c)
 
+	if err != nil {
+		//Response Body was formed inside getUserId
+		return
+	}
+
+	var productList model.ProductList
+
+	if err := c.BindJSON(&productList); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error(), "createProductList")
+		return
+	}
+
+	listId, code, err := h.services.ProductList.CreateProductList(userId, productList)
+
+	if err != nil {
+		if code == 400 {
+			newErrorResponse(c, http.StatusBadRequest, err.Error(), "createProductList")
+			return
+		}
+
+		newErrorResponse(c, http.StatusInternalServerError, err.Error(), "createProductList")
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"productListId": listId,
+	})
 }

@@ -15,13 +15,13 @@ type Authorization interface {
 }
 
 type ProductList interface {
-	GetAllProductLists(userId string) ([]model.ProductList, error)
-	AddProductList(list model.ProductList) (string, error)
+	GetProductList(listId string) (model.ProductList, error)
+	CreateProductList(list model.ProductList) (string, error)
 }
 
 type UserList interface {
 	GetUserLists(userId string) ([]model.UserProductListInfo, error)
-	LinkListToUser(listId string, userId string) error
+	LinkListToUser(userId string, listInfo model.UserProductListInfo) error
 }
 
 type Repository struct {

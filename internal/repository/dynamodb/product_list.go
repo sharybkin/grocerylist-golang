@@ -25,42 +25,72 @@ func NewProductList(db *db.DynamoDB) *ProductList {
 	return &ProductList{database: db}
 }
 
-func (p *ProductList) GetAllProductLists(userId string) ([]model.ProductList, error) {
+//func (p *ProductList) GetAllProductLists(userId string) ([]model.ProductList, error) {
+//
+//	var lists []model.ProductList
+//
+//	client, err := p.database.GetClient()
+//
+//	if err != nil {
+//		return lists, err
+//	}
+//
+//	id := "1df81a12-5841-470e-afa3-e9cdc10d04f8"
+//
+//	out, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+//		TableName: aws.String(productListsTable),
+//		Key: map[string]types.AttributeValue{
+//			"id": &types.AttributeValueMemberS{Value: id},
+//		},
+//	})
+//
+//	if err != nil {
+//		return lists, err
+//	}
+//	var productList model.ProductList
+//
+//	err = attributevalue.UnmarshalMap(out.Item, &productList)
+//	if err != nil {
+//		log.Fatalln(err.Error())
+//		return lists, fmt.Errorf("failed to unmarshal Items, %w", err)
+//	}
+//
+//	lists = append(lists, productList)
+//
+//	return lists, nil
+//}
 
-	var lists []model.ProductList
+func (p *ProductList) GetProductList(listId string) (model.ProductList, error) {
+
+	var list model.ProductList
 
 	client, err := p.database.GetClient()
 
 	if err != nil {
-		return lists, err
+		return list, err
 	}
-
-	id := "1df81a12-5841-470e-afa3-e9cdc10d04f8"
 
 	out, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(productListsTable),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberS{Value: id},
+			"id": &types.AttributeValueMemberS{Value: listId},
 		},
 	})
 
 	if err != nil {
-		return lists, err
+		return list, err
 	}
-	var productList model.ProductList
 
-	err = attributevalue.UnmarshalMap(out.Item, &productList)
+	err = attributevalue.UnmarshalMap(out.Item, &list)
 	if err != nil {
 		log.Fatalln(err.Error())
-		return lists, fmt.Errorf("failed to unmarshal Items, %w", err)
+		return list, fmt.Errorf("failed to unmarshal Items, %w", err)
 	}
 
-	lists = append(lists, productList)
-
-	return lists, nil
+	return list, nil
 }
 
-func (p *ProductList) AddProductList(list model.ProductList) (string, error) {
+func (p *ProductList) CreateProductList(list model.ProductList) (string, error) {
 
 	list.Id = uuid.New().String()
 
