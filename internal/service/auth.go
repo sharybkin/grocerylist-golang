@@ -77,6 +77,7 @@ func (*AuthService) ParseToken(accessToken string) (string, error) {
 }
 
 func generatePasswordHash(password string) string {
+	//TODO: create unique hash password
 	hash := sha1.New()
 	hash.Write([]byte(password))
 

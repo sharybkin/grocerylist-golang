@@ -90,19 +90,49 @@ func (p *ProductList) GetProductList(listId string) (model.ProductList, error) {
 	return list, nil
 }
 
-func (p *ProductList) CreateProductList(list model.ProductList) (string, error) {
+func (p *ProductList) CreateProductList(request model.ProductListRequest) (string, error) {
 
-	list.Id = uuid.New().String()
+	list := model.ProductList{
+		Id:   uuid.New().String(),
+		Name: request.Name}
 
+	err := p.createOrUpdateProductList(list)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to put Record, %w", err)
+	}
+
+	log.WithFields(log.Fields{
+		"listName": request.Name,
+	}).Info("ProductList was added")
+
+	return list.Id, nil
+}
+
+
+func (p *ProductList) UpdateProductList(list model.ProductList) error {
+	err := p.createOrUpdateProductList(list)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"listName": list.Name,
+	}).Info("ProductList was updated")
+
+	return nil
+}
+
+func (p *ProductList) createOrUpdateProductList(list model.ProductList) error {
 	client, err := p.database.GetClient()
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	av, err := attributevalue.MarshalMap(list)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal Record, %w", err)
+		return fmt.Errorf("failed to marshal Record, %w", err)
 	}
 
 	_, err = client.PutItem(context.TODO(), &dynamodb.PutItemInput{
@@ -110,14 +140,5 @@ func (p *ProductList) CreateProductList(list model.ProductList) (string, error) 
 		Item:      av,
 	})
 
-	if err != nil {
-		return "", fmt.Errorf("failed to put Record, %w", err)
-	}
-
-
-	log.WithFields(log.Fields{
-		"listName": list.Name,
-	}).Info("ProductList was added")
-
-	return list.Id, nil
+	return nil
 }

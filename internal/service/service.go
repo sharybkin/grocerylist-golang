@@ -12,12 +12,14 @@ type Authorization interface {
 }
 
 type ProductList interface {
-	CreateProductList(userId string,list model.ProductList) (string, int, error)
+	CreateProductList(userId string, request model.ProductListRequest) (string, int, error)
+	UpdateProductList(userId string, listId string, request model.ProductListRequest) (int, error)
 }
 
 type UserLists interface {
 	GetUserLists(userId string) ([]model.UserProductListInfo, error)
 	LinkListToUser(userId string, list model.UserProductListInfo) error
+	UpdateUserList(userId string, listInfo model.UserProductListInfo) error
 }
 
 type ServicesHolder struct {

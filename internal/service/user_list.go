@@ -17,7 +17,11 @@ func NewUserListService(repo repository.UserList) *UserListService{
 func (u *UserListService) GetUserLists(userId string) ([]model.UserProductListInfo, error) {
 	return u.repo.GetUserLists(userId)
 }
-//TODO: Реализовать!!!
+
 func (u *UserListService) LinkListToUser(userId string, listInfo model.UserProductListInfo) error {
 	return u.repo.LinkListToUser(userId, listInfo)
+}
+
+func (u *UserListService) UpdateUserList(userId string, listInfo model.UserProductListInfo) error {
+	return u.repo.UpdateUserList(userId, listInfo)
 }

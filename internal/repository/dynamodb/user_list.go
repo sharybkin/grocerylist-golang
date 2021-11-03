@@ -68,12 +68,6 @@ func (u *UserList) GetUserLists(userId string) ([]model.UserProductListInfo, err
 
 func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListInfo) error {
 
-	client, err := u.database.GetClient()
-
-	if err != nil {
-		return err
-	}
-
 	productLists, err := u.GetUserLists(userId)
 
 	if err != nil{
@@ -81,6 +75,44 @@ func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListI
 	}
 
 	productLists = append(productLists, listInfo)
+
+	if err := u.saveUserLists(userId, productLists); err != nil {
+		return fmt.Errorf("failed to put Record, %w", err)
+	}
+
+	log.WithFields(log.Fields{
+		"userId": userId,
+		"listName": listInfo.Name,
+	}).Info("List was linked")
+
+	return nil
+}
+
+func (u *UserList) UpdateUserList(userId string, listInfo model.UserProductListInfo) error {
+
+	productLists, err := u.GetUserLists(userId)
+	if err != nil{
+		return fmt.Errorf("getting user information failed, %w", err)
+	}
+
+	for i := range productLists {
+		if productLists[i].Id == listInfo.Id {
+			productLists[i].Name = listInfo.Name
+		}
+	}
+
+	if err := u.saveUserLists(userId, productLists); err != nil {
+		return fmt.Errorf("failed to put Record, %w", err)
+	}
+
+	return nil
+}
+
+func (u *UserList) saveUserLists(userId string, productLists []model.UserProductListInfo) error {
+	client, err := u.database.GetClient()
+	if err != nil {
+		return err
+	}
 
 	userList := model.UserLists{UserId: userId, ProductLists: productLists}
 
@@ -94,14 +126,5 @@ func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListI
 		Item:      av,
 	})
 
-	if err != nil {
-		return fmt.Errorf("failed to put Record, %w", err)
-	}
-
-	log.WithFields(log.Fields{
-		"userId": userId,
-		"listName": listInfo.Name,
-	}).Info("List was linked")
-
-	return nil
+	return err
 }
