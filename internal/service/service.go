@@ -14,6 +14,7 @@ type Authorization interface {
 type ProductList interface {
 	CreateProductList(userId string, request model.ProductListRequest) (string, int, error)
 	UpdateProductList(userId string, listId string, request model.ProductListRequest) (int, error)
+	DeleteProductList(userId string, listId string) (int, error)
 }
 
 type UserLists interface {

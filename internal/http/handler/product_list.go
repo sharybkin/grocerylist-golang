@@ -49,13 +49,33 @@ func (h *Handler) updateProductList(c *gin.Context) {
 		return
 	}
 
-	h.services.ProductList.UpdateProductList(userId, listId, request)
+	code, err := h.services.ProductList.UpdateProductList(userId, listId, request)
+
+	if err != nil {
+		setErrorResponse(c, code, err, "updateProductList")
+		return
+	}
 
 	c.Status(http.StatusOK)
 }
 
 func (h *Handler) deleteProductList(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		//Response Body was formed inside getUserId
+		return
+	}
 
+	listId := c.Param("id")
+
+	code, err := h.services.ProductList.DeleteProductList(userId, listId)
+
+	if err != nil {
+		setErrorResponse(c, code, err, "deleteProductList")
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) createProductList(c *gin.Context) {
@@ -76,16 +96,21 @@ func (h *Handler) createProductList(c *gin.Context) {
 	listId, code, err := h.services.ProductList.CreateProductList(userId, productList)
 
 	if err != nil {
-		if code == 400 {
-			newErrorResponse(c, http.StatusBadRequest, err.Error(), "createProductList")
-			return
-		}
-
-		newErrorResponse(c, http.StatusInternalServerError, err.Error(), "createProductList")
+		setErrorResponse(c, code, err, "createProductList")
 		return
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"productListId": listId,
 	})
+}
+
+func setErrorResponse(c *gin.Context, code int, err error, component string){
+	if code == 400 {
+		newErrorResponse(c, http.StatusBadRequest, err.Error(), component)
+		return
+	}
+
+	newErrorResponse(c, http.StatusInternalServerError, err.Error(), component)
+	return
 }

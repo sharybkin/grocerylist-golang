@@ -108,6 +108,32 @@ func (u *UserList) UpdateUserList(userId string, listInfo model.UserProductListI
 	return nil
 }
 
+func (u *UserList) UnlinkListFromUser(userId string, listId string) error {
+	productLists, err := u.GetUserLists(userId)
+
+	if err != nil{
+		return fmt.Errorf("getting user information failed, %w", err)
+	}
+
+	for i := range productLists {
+		if productLists[i].Id == listId {
+			productLists = append(productLists[:i], productLists[i+1:]...)
+			break
+		}
+	}
+
+	if err := u.saveUserLists(userId, productLists); err != nil {
+		return fmt.Errorf("failed to update the record, %w", err)
+	}
+
+	log.WithFields(log.Fields{
+		"userId": userId,
+		"listId": listId,
+	}).Info("List was unlinked")
+
+	return nil
+}
+
 func (u *UserList) saveUserLists(userId string, productLists []model.UserProductListInfo) error {
 	client, err := u.database.GetClient()
 	if err != nil {

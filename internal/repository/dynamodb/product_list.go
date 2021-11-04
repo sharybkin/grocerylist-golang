@@ -96,9 +96,7 @@ func (p *ProductList) CreateProductList(request model.ProductListRequest) (strin
 		Id:   uuid.New().String(),
 		Name: request.Name}
 
-	err := p.createOrUpdateProductList(list)
-
-	if err != nil {
+	if err := p.createOrUpdateProductList(list); err != nil {
 		return "", fmt.Errorf("failed to put Record, %w", err)
 	}
 
@@ -119,6 +117,31 @@ func (p *ProductList) UpdateProductList(list model.ProductList) error {
 	log.WithFields(log.Fields{
 		"listName": list.Name,
 	}).Info("ProductList was updated")
+
+	return nil
+}
+
+func (p *ProductList) DeleteProductList(userId string, listId string) error {
+	client, err := p.database.GetClient()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(productListsTable),
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: listId},
+		},
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to delete product list [%s], %w", listId, err)
+	}
+
+	log.WithFields(log.Fields{
+		"listId": listId,
+	}).Info("ProductList was deleted")
 
 	return nil
 }

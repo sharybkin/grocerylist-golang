@@ -2,7 +2,8 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -12,6 +13,7 @@ import (
 
 type DynamoDB struct {
 	config aws.Config
+	client *dynamodb.Client
 }
 
 func NewDynamoDB() (*DynamoDB, error) {
@@ -25,7 +27,15 @@ func NewDynamoDB() (*DynamoDB, error) {
 
 func (d *DynamoDB) GetClient() (*dynamodb.Client, error) {
 
-	return createClient(d.config)
+	if d.client == nil {
+		dbClient, err := createClient(d.config)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create dynamodb client, %w", err)
+		}
+		d.client =  dbClient
+		log.Infoln("dynamodb client was created")
+	}
+	return d.client, nil
 }
 
 func createClient(cfg aws.Config) (*dynamodb.Client, error) {
