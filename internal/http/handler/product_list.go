@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/sharybkin/grocerylist-golang/internal/model"
+	"github.com/sharybkin/grocerylist-golang/pkg/extension"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,11 +27,6 @@ func (h *Handler) getUserLists(c *gin.Context) {
 	})
 }
 
-func (h *Handler) getProductListById(c *gin.Context) {
-
-
-}
-
 func (h *Handler) updateProductList(c *gin.Context) {
 
 	listId := c.Param("id")
@@ -49,10 +45,8 @@ func (h *Handler) updateProductList(c *gin.Context) {
 		return
 	}
 
-	code, err := h.services.ProductList.UpdateProductList(userId, listId, request)
-
-	if err != nil {
-		setErrorResponse(c, code, err, "updateProductList")
+	if err := h.services.ProductList.UpdateProductList(userId, listId, request); err != nil {
+		setErrorResponse(c, err, "updateProductList")
 		return
 	}
 
@@ -68,10 +62,8 @@ func (h *Handler) deleteProductList(c *gin.Context) {
 
 	listId := c.Param("id")
 
-	code, err := h.services.ProductList.DeleteProductList(userId, listId)
-
-	if err != nil {
-		setErrorResponse(c, code, err, "deleteProductList")
+	if err := h.services.ProductList.DeleteProductList(userId, listId); err != nil {
+		setErrorResponse(c, err, "deleteProductList")
 		return
 	}
 
@@ -93,10 +85,10 @@ func (h *Handler) createProductList(c *gin.Context) {
 		return
 	}
 
-	listId, code, err := h.services.ProductList.CreateProductList(userId, productList)
+	listId, err := h.services.ProductList.CreateProductList(userId, productList)
 
 	if err != nil {
-		setErrorResponse(c, code, err, "createProductList")
+		setErrorResponse(c, err, "createProductList")
 		return
 	}
 
@@ -105,9 +97,16 @@ func (h *Handler) createProductList(c *gin.Context) {
 	})
 }
 
-func setErrorResponse(c *gin.Context, code int, err error, component string){
-	if code == 400 {
+func setErrorResponse(c *gin.Context, err error, component string) {
+	if _, ok := err.(*extension.BadRequestError); ok {
+
 		newErrorResponse(c, http.StatusBadRequest, err.Error(), component)
+		return
+	}
+
+	if _, ok := err.(*extension.NotFoundError); ok {
+
+		newErrorResponse(c, http.StatusNotFound, err.Error(), component)
 		return
 	}
 

@@ -37,14 +37,13 @@ func (s *Auth) CreateUser(user model.User) (string, error) {
 	if exists {
 		message := fmt.Sprintf("'%s' already exists", user.Username)
 		log.Infoln(message)
-
-		return "", &extension.AuthError{Message: message}
+		return "", &extension.AuthError{HttpError: extension.HttpError{Message: message}}
 	}
 
 	user.Id = uuid.New().String()
 
 	log.WithFields(log.Fields{
-		"user":     user.Name,
+		"user": user.Name,
 	}).Info("User was added")
 
 	client, err := s.database.GetClient()
@@ -121,7 +120,7 @@ func (s *Auth) GetUserByCredentials(username, password string) (model.User, erro
 
 		message := fmt.Sprintf("user %s not found", username)
 		log.Infoln(message)
-		return model.User{}, &extension.AuthError{Message: message}
+		return model.User{}, &extension.AuthError{HttpError: extension.HttpError{Message: message}}
 	}
 
 	if userModel.Password != password {
@@ -129,7 +128,7 @@ func (s *Auth) GetUserByCredentials(username, password string) (model.User, erro
 		message := fmt.Sprintf("Invalid password for user '%s'", username)
 		log.Infoln(message)
 
-		return model.User{}, &extension.AuthError{Message: "invalid password"}
+		return model.User{}, &extension.AuthError{HttpError: extension.HttpError{Message: "invalid password"}}
 	}
 
 	return userModel, nil

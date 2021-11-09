@@ -12,9 +12,9 @@ type Authorization interface {
 }
 
 type ProductList interface {
-	CreateProductList(userId string, request model.ProductListRequest) (string, int, error)
-	UpdateProductList(userId string, listId string, request model.ProductListRequest) (int, error)
-	DeleteProductList(userId string, listId string) (int, error)
+	CreateProductList(userId string, request model.ProductListRequest) (string, error)
+	UpdateProductList(userId string, listId string, request model.ProductListRequest) error
+	DeleteProductList(userId string, listId string) error
 }
 
 type UserLists interface {
@@ -23,10 +23,15 @@ type UserLists interface {
 	UpdateUserList(userId string, listInfo model.UserProductListInfo) error
 }
 
+type Product interface {
+	GetAllProducts(userId string, listId string) ([]model.Product, int, error)
+}
+
 type ServicesHolder struct {
 	Authorization
 	ProductList
 	UserLists
+	Product
 }
 
 func NewService(repository *repository.Repository) *ServicesHolder {
@@ -36,6 +41,7 @@ func NewService(repository *repository.Repository) *ServicesHolder {
 	return &ServicesHolder{
 		Authorization: NewAuthService(repository.Authorization),
 		ProductList:   NewProductListService(repository.ProductList, userListService),
-		UserLists: userListService,
+		UserLists:     userListService,
+		Product:       NewProductService(),
 	}
 }
