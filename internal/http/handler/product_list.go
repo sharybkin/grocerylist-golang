@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/sharybkin/grocerylist-golang/internal/model"
-	"github.com/sharybkin/grocerylist-golang/pkg/extension"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -95,21 +94,4 @@ func (h *Handler) createProductList(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"productListId": listId,
 	})
-}
-
-func setErrorResponse(c *gin.Context, err error, component string) {
-	if _, ok := err.(*extension.BadRequestError); ok {
-
-		newErrorResponse(c, http.StatusBadRequest, err.Error(), component)
-		return
-	}
-
-	if _, ok := err.(*extension.NotFoundError); ok {
-
-		newErrorResponse(c, http.StatusNotFound, err.Error(), component)
-		return
-	}
-
-	newErrorResponse(c, http.StatusInternalServerError, err.Error(), component)
-	return
 }

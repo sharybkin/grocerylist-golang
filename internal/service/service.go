@@ -24,7 +24,7 @@ type UserLists interface {
 }
 
 type Product interface {
-	GetAllProducts(userId string, listId string) ([]model.Product, int, error)
+	GetAllProducts(userId string, listId string) ([]model.Product, error)
 }
 
 type ServicesHolder struct {
@@ -42,6 +42,6 @@ func NewService(repository *repository.Repository) *ServicesHolder {
 		Authorization: NewAuthService(repository.Authorization),
 		ProductList:   NewProductListService(repository.ProductList, userListService),
 		UserLists:     userListService,
-		Product:       NewProductService(),
+		Product:       NewProductService(repository.ProductList, userListService),
 	}
 }

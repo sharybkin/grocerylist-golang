@@ -107,7 +107,6 @@ func (p *ProductList) CreateProductList(request model.ProductListRequest) (strin
 	return list.Id, nil
 }
 
-
 func (p *ProductList) UpdateProductList(list model.ProductList) error {
 	err := p.createOrUpdateProductList(list)
 	if err != nil {
@@ -164,4 +163,14 @@ func (p *ProductList) createOrUpdateProductList(list model.ProductList) error {
 	})
 
 	return nil
+}
+
+func (p *ProductList) GetProducts(listId string) ([]model.Product, error) {
+	productList, err := p.GetProductList(listId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return productList.Products, nil
 }

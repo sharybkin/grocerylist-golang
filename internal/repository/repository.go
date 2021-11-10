@@ -19,6 +19,7 @@ type ProductList interface {
 	CreateProductList(request model.ProductListRequest) (string, error)
 	UpdateProductList(list model.ProductList) error
 	DeleteProductList(userId string, listId string) error
+	GetProducts(listId string) ([]model.Product, error)
 }
 
 type UserList interface {
@@ -44,6 +45,6 @@ func NewRepository() *Repository {
 	return &Repository{
 		Authorization: dynamorepo.NewAuth(db),
 		ProductList:   dynamorepo.NewProductList(db),
-		UserList: dynamorepo.NewUserList(db),
+		UserList:      dynamorepo.NewUserList(db),
 	}
 }

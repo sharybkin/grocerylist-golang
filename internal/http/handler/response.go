@@ -2,7 +2,9 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sharybkin/grocerylist-golang/pkg/extension"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 type errorResponse struct {
@@ -17,4 +19,21 @@ func newErrorResponse(c *gin.Context, statusCode int, message string, component 
 	}
 
 	c.AbortWithStatusJSON(statusCode, errorResponse{message})
+}
+
+func setErrorResponse(c *gin.Context, err error, component string) {
+	if _, ok := err.(*extension.BadRequestError); ok {
+
+		newErrorResponse(c, http.StatusBadRequest, err.Error(), component)
+		return
+	}
+
+	if _, ok := err.(*extension.NotFoundError); ok {
+
+		newErrorResponse(c, http.StatusNotFound, err.Error(), component)
+		return
+	}
+
+	newErrorResponse(c, http.StatusInternalServerError, err.Error(), component)
+	return
 }

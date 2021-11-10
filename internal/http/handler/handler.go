@@ -26,7 +26,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		api.GET("/productExamples", h.getAllProductExamples)
 
-		lists := api.Group("/productList")
+		lists := api.Group("/list")
 		{
 			lists.GET("/", h.getUserLists)
 			lists.POST("/", h.createProductList)
