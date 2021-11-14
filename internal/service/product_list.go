@@ -5,6 +5,7 @@ import (
 	"github.com/sharybkin/grocerylist-golang/internal/model"
 	"github.com/sharybkin/grocerylist-golang/internal/repository"
 	"github.com/sharybkin/grocerylist-golang/pkg/extension"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -48,6 +49,12 @@ func (p *ProductListService) CreateProductList(userId string, request model.Prod
 		return "", fmt.Errorf("cannot link list [%s] to user [%s], %w", listId, userId, err)
 	}
 
+	log.WithFields(log.Fields{
+		"listId":    listId,
+		"userId":    userId,
+		"list name": request.Name,
+	}).Debug("CreateProductList")
+
 	return listId, nil
 }
 
@@ -64,6 +71,11 @@ func (p *ProductListService) DeleteProductList(userId string, listId string) err
 	if err := p.repo.DeleteProductList(userId, listId); err != nil {
 		return fmt.Errorf("cannot delete list [%s], %w", listId, err)
 	}
+
+	log.WithFields(log.Fields{
+		"listId": listId,
+		"userId": userId,
+	}).Debug("DeleteProductList")
 
 	return nil
 }
@@ -89,6 +101,12 @@ func (p *ProductListService) UpdateProductList(userId string, listId string, req
 	if err := p.userListService.UpdateUserList(userId, listInfo); err != nil {
 		return fmt.Errorf("cannot change linked list info for user [%s], %w", userId, err)
 	}
+
+	log.WithFields(log.Fields{
+		"listId":    listId,
+		"userId":    userId,
+		"list name": request.Name,
+	}).Debug("UpdateProductList")
 
 	return nil
 }

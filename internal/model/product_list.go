@@ -7,11 +7,12 @@ type ProductList struct {
 }
 
 type Product struct {
+	Id     string  `json:"id" dynamodbav:"id"`
 	Name   string  `json:"name" dynamodbav:"name"`
 	Count  float32 `json:"count" dynamodbav:"count"`
 	IsDone bool    `json:"done" dynamodbav:"done"`
 }
 
 type ProductListRequest struct {
-	Name     string    `json:"name"`
+	Name string `json:"name"`
 }

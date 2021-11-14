@@ -1,3 +1,6 @@
 port: "8080"
 aws:
   region: "eu-central-1"
+
+log:
+  level: "Debug"

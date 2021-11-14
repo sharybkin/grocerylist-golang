@@ -25,41 +25,6 @@ func NewProductList(db *db.DynamoDB) *ProductList {
 	return &ProductList{database: db}
 }
 
-//func (p *ProductList) GetAllProductLists(userId string) ([]model.ProductList, error) {
-//
-//	var lists []model.ProductList
-//
-//	client, err := p.database.GetClient()
-//
-//	if err != nil {
-//		return lists, err
-//	}
-//
-//	id := "1df81a12-5841-470e-afa3-e9cdc10d04f8"
-//
-//	out, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-//		TableName: aws.String(productListsTable),
-//		Key: map[string]types.AttributeValue{
-//			"id": &types.AttributeValueMemberS{Value: id},
-//		},
-//	})
-//
-//	if err != nil {
-//		return lists, err
-//	}
-//	var productList model.ProductList
-//
-//	err = attributevalue.UnmarshalMap(out.Item, &productList)
-//	if err != nil {
-//		log.Fatalln(err.Error())
-//		return lists, fmt.Errorf("failed to unmarshal Items, %w", err)
-//	}
-//
-//	lists = append(lists, productList)
-//
-//	return lists, nil
-//}
-
 func (p *ProductList) GetProductList(listId string) (model.ProductList, error) {
 
 	var list model.ProductList
@@ -173,4 +138,39 @@ func (p *ProductList) GetProducts(listId string) ([]model.Product, error) {
 	}
 
 	return productList.Products, nil
+}
+
+func (p *ProductList) AddProduct(listId string, product model.Product) (string, error) {
+	client, err := p.database.GetClient()
+	if err != nil {
+		return "", err
+	}
+	product.Id = uuid.New().String()
+
+	av, err := attributevalue.Marshal(product)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal Record, %w", err)
+	}
+
+	var products []types.AttributeValue
+	products = append(products, av)
+
+	_, err = client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(productListsTable),
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: listId},
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":empty_list": &types.AttributeValueMemberL{},
+			":products":   &types.AttributeValueMemberL{Value: products},
+		},
+		ReturnValues:     types.ReturnValueAllNew,
+		UpdateExpression: aws.String("SET products = list_append(if_not_exists(products, :empty_list), :products)"),
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("failed to add product to list [%s], %w", listId, err)
+	}
+
+	return product.Id, nil
 }

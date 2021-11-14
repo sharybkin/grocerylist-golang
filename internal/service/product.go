@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/sharybkin/grocerylist-golang/internal/model"
 	"github.com/sharybkin/grocerylist-golang/internal/repository"
+	log "github.com/sirupsen/logrus"
 )
 
 type ProductService struct {
@@ -32,4 +33,27 @@ func (p *ProductService) GetAllProducts(userId string, listId string) ([]model.P
 	}
 
 	return products, nil
+}
+
+func (p *ProductService) AddProduct(userId string, listId string, product model.Product) (string, error) {
+	if p.repo == nil {
+		return "", errors.New("null pointer exception")
+	}
+
+	if err := p.userListService.checkUserList(userId, listId); err != nil {
+		return "", err
+	}
+
+	productId, err := p.repo.AddProduct(listId, product)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to add product to list [%s] %w", listId, err)
+	}
+
+	log.WithFields(log.Fields{
+		"listId":  listId,
+		"product": product.Name,
+	}).Debug("AddProduct")
+
+	return productId, err
 }
