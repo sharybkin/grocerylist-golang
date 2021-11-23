@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
+	ext "github.com/sharybkin/grocerylist-golang/internal/extension"
 	"github.com/sharybkin/grocerylist-golang/internal/model"
 	"github.com/sharybkin/grocerylist-golang/pkg/db"
 	log "github.com/sirupsen/logrus"
@@ -58,8 +59,10 @@ func (p *ProductList) GetProductList(listId string) (model.ProductList, error) {
 func (p *ProductList) CreateProductList(request model.ProductListRequest) (string, error) {
 
 	list := model.ProductList{
-		Id:   uuid.New().String(),
-		Name: request.Name}
+		Id:       uuid.New().String(),
+		Name:     request.Name,
+		Products: map[string]model.Product{},
+	}
 
 	if err := p.createOrUpdateProductList(list); err != nil {
 		return "", fmt.Errorf("failed to put Record, %w", err)
@@ -73,6 +76,7 @@ func (p *ProductList) CreateProductList(request model.ProductListRequest) (strin
 }
 
 func (p *ProductList) UpdateProductList(list model.ProductList) error {
+	//TODO: переделать на изменение, потому что значения уже есть
 	err := p.createOrUpdateProductList(list)
 	if err != nil {
 		return err
@@ -85,7 +89,7 @@ func (p *ProductList) UpdateProductList(list model.ProductList) error {
 	return nil
 }
 
-func (p *ProductList) DeleteProductList(userId string, listId string) error {
+func (p *ProductList) DeleteProductList(listId string) error {
 	client, err := p.database.GetClient()
 
 	if err != nil {
@@ -100,7 +104,7 @@ func (p *ProductList) DeleteProductList(userId string, listId string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to delete product list [%s], %w", listId, err)
+		return err
 	}
 
 	log.WithFields(log.Fields{
@@ -137,7 +141,7 @@ func (p *ProductList) GetProducts(listId string) ([]model.Product, error) {
 		return nil, err
 	}
 
-	return productList.Products, nil
+	return ext.GetValues(productList.Products), nil
 }
 
 func (p *ProductList) AddProduct(listId string, product model.Product) (string, error) {
@@ -147,29 +151,29 @@ func (p *ProductList) AddProduct(listId string, product model.Product) (string, 
 	}
 	product.Id = uuid.New().String()
 
-	av, err := attributevalue.Marshal(product)
+	av, err := attributevalue.MarshalMap(product)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal Record, %w", err)
 	}
-
-	var products []types.AttributeValue
-	products = append(products, av)
 
 	_, err = client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(productListsTable),
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: listId},
 		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":empty_list": &types.AttributeValueMemberL{},
-			":products":   &types.AttributeValueMemberL{Value: products},
+		ExpressionAttributeNames: map[string]string{
+			"#id": product.Id,
 		},
-		ReturnValues:     types.ReturnValueAllNew,
-		UpdateExpression: aws.String("SET products = list_append(if_not_exists(products, :empty_list), :products)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":product": &types.AttributeValueMemberM{Value: av},
+		},
+		UpdateExpression: aws.String("SET products.#id = :product"),
+		//ConditionExpression: aws.String("attribute_not_exists(products.#id)"),
+		ReturnValues: types.ReturnValueAllNew,
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to add product to list [%s], %w", listId, err)
+		return "", err
 	}
 
 	return product.Id, nil

@@ -53,7 +53,7 @@ func (p *ProductService) AddProduct(userId string, listId string, product model.
 	log.WithFields(log.Fields{
 		"listId":  listId,
 		"product": product.Name,
-	}).Debug("AddProduct")
+	}).Debug("Product was added")
 
 	return productId, err
 }

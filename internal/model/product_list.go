@@ -1,9 +1,9 @@
 package model
 
 type ProductList struct {
-	Id       string    `json:"id" dynamodbav:"id"`
-	Name     string    `json:"name" dynamodbav:"name"`
-	Products []Product `json:"products" dynamodbav:"products"`
+	Id       string             `json:"id" dynamodbav:"id"`
+	Name     string             `json:"name" dynamodbav:"name"`
+	Products map[string]Product `json:"products" dynamodbav:"products"`
 }
 
 type Product struct {

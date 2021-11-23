@@ -68,7 +68,7 @@ func (p *ProductListService) DeleteProductList(userId string, listId string) err
 		return fmt.Errorf("cannot unlink list [%s] from user [%s], %w", listId, userId, err)
 	}
 
-	if err := p.repo.DeleteProductList(userId, listId); err != nil {
+	if err := p.repo.DeleteProductList(listId); err != nil {
 		return fmt.Errorf("cannot delete list [%s], %w", listId, err)
 	}
 

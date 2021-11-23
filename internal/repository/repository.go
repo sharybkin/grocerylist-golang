@@ -18,7 +18,7 @@ type ProductList interface {
 	GetProductList(listId string) (model.ProductList, error)
 	CreateProductList(request model.ProductListRequest) (string, error)
 	UpdateProductList(list model.ProductList) error
-	DeleteProductList(userId string, listId string) error
+	DeleteProductList(listId string) error
 
 	GetProducts(listId string) ([]model.Product, error)
 	AddProduct(listId string, product model.Product) (string, error)
@@ -39,14 +39,14 @@ type Repository struct {
 
 func NewRepository() *Repository {
 
-	db, err := db.NewDynamoDB()
+	dynamoDb, err := db.NewDynamoDB()
 	if err != nil {
 		log.Fatalln("DynamoDB initialization failed", err.Error())
 	}
 
 	return &Repository{
-		Authorization: dynamorepo.NewAuth(db),
-		ProductList:   dynamorepo.NewProductList(db),
-		UserList:      dynamorepo.NewUserList(db),
+		Authorization: dynamorepo.NewAuth(dynamoDb),
+		ProductList:   dynamorepo.NewProductList(dynamoDb),
+		UserList:      dynamorepo.NewUserList(dynamoDb),
 	}
 }
