@@ -144,12 +144,15 @@ func (p *ProductList) GetProducts(listId string) ([]model.Product, error) {
 	return ext.GetValues(productList.Products), nil
 }
 
-func (p *ProductList) AddProduct(listId string, product model.Product) (string, error) {
+func (p *ProductList) AddOrUpdateProduct(listId string, product model.Product, update bool) (string, error) {
 	client, err := p.database.GetClient()
 	if err != nil {
 		return "", err
 	}
-	product.Id = uuid.New().String()
+
+	if !update {
+		product.Id = uuid.New().String()
+	}
 
 	av, err := attributevalue.MarshalMap(product)
 	if err != nil {

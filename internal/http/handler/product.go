@@ -28,7 +28,29 @@ func (h *Handler) getAllProducts(c *gin.Context) {
 }
 
 func (h *Handler) updateProduct(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		//Response Body was formed inside getUserId
+		return
+	}
 
+	listId := c.Param("id")
+	productId := c.Param("product_id")
+
+	var product model.Product
+	if err := c.BindJSON(&product); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error(), "updateProduct")
+		return
+	}
+
+	product.Id = productId
+
+	if err := h.services.Product.UpdateProduct(userId, listId, product); err != nil {
+		setErrorResponse(c, err, "updateProduct")
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) deleteProduct(c *gin.Context) {
@@ -47,7 +69,6 @@ func (h *Handler) deleteProduct(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
-
 }
 
 func (h *Handler) addProduct(c *gin.Context) {

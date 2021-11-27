@@ -44,7 +44,7 @@ func (p *ProductService) AddProduct(userId string, listId string, product model.
 		return "", err
 	}
 
-	productId, err := p.repo.AddProduct(listId, product)
+	productId, err := p.repo.AddOrUpdateProduct(listId, product, false)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to add product to list [%s] %w", listId, err)
@@ -56,6 +56,24 @@ func (p *ProductService) AddProduct(userId string, listId string, product model.
 	}).Debug("Product was added")
 
 	return productId, err
+}
+
+func (p *ProductService) UpdateProduct(userId string, listId string, product model.Product) error {
+	if p.repo == nil {
+		return errors.New("null pointer exception")
+	}
+
+	if err := p.userListService.checkUserList(userId, listId); err != nil {
+		return err
+	}
+
+	_, err := p.repo.AddOrUpdateProduct(listId, product, true)
+
+	if err != nil {
+		return fmt.Errorf("failed to update product from list [%s] %w", listId, err)
+	}
+
+	return nil
 }
 
 func (p *ProductService) DeleteProduct(userId string, listId string, productId string) error {

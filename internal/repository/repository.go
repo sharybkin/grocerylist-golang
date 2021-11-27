@@ -21,7 +21,7 @@ type ProductList interface {
 	DeleteProductList(listId string) error
 
 	GetProducts(listId string) ([]model.Product, error)
-	AddProduct(listId string, product model.Product) (string, error)
+	AddOrUpdateProduct(listId string, product model.Product, update bool) (string, error)
 	DeleteProduct(listId string, productId string) error
 }
 

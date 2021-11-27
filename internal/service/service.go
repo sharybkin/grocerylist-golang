@@ -26,6 +26,7 @@ type UserLists interface {
 type Product interface {
 	GetAllProducts(userId string, listId string) ([]model.Product, error)
 	AddProduct(userId string, listId string, product model.Product) (string, error)
+	UpdateProduct(userId string, listId string, product model.Product) error
 	DeleteProduct(userId string, listId string, productId string) error
 }
 
