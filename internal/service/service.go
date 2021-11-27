@@ -26,6 +26,7 @@ type UserLists interface {
 type Product interface {
 	GetAllProducts(userId string, listId string) ([]model.Product, error)
 	AddProduct(userId string, listId string, product model.Product) (string, error)
+	DeleteProduct(userId string, listId string, productId string) error
 }
 
 type ServicesHolder struct {

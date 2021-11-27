@@ -178,3 +178,24 @@ func (p *ProductList) AddProduct(listId string, product model.Product) (string, 
 
 	return product.Id, nil
 }
+
+func (p *ProductList) DeleteProduct(listId string, productId string) error {
+	client, err := p.database.GetClient()
+	if err != nil {
+		return err
+	}
+
+	_, err = client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(productListsTable),
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: listId},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#id": productId,
+		},
+		UpdateExpression: aws.String("REMOVE products.#id"),
+		ReturnValues:     types.ReturnValueNone,
+	})
+
+	return err
+}

@@ -22,6 +22,7 @@ type ProductList interface {
 
 	GetProducts(listId string) ([]model.Product, error)
 	AddProduct(listId string, product model.Product) (string, error)
+	DeleteProduct(listId string, productId string) error
 }
 
 type UserList interface {

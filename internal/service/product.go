@@ -57,3 +57,19 @@ func (p *ProductService) AddProduct(userId string, listId string, product model.
 
 	return productId, err
 }
+
+func (p *ProductService) DeleteProduct(userId string, listId string, productId string) error {
+	if p.repo == nil {
+		return errors.New("null pointer exception")
+	}
+
+	if err := p.userListService.checkUserList(userId, listId); err != nil {
+		return err
+	}
+
+	if err := p.repo.DeleteProduct(listId, productId); err != nil {
+		return fmt.Errorf("failed to delete product from list [%s] %w", listId, err)
+	}
+
+	return nil
+}

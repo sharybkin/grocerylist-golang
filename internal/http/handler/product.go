@@ -32,6 +32,21 @@ func (h *Handler) updateProduct(c *gin.Context) {
 }
 
 func (h *Handler) deleteProduct(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		//Response Body was formed inside getUserId
+		return
+	}
+
+	listId := c.Param("id")
+	productId := c.Param("product_id")
+
+	if err := h.services.Product.DeleteProduct(userId, listId, productId); err != nil {
+		setErrorResponse(c, err, "deleteProduct")
+		return
+	}
+
+	c.Status(http.StatusOK)
 
 }
 
