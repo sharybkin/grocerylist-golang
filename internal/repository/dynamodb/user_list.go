@@ -26,10 +26,9 @@ func NewUserList(db *db.DynamoDB) *UserList {
 
 func (u *UserList) GetUserLists(userId string) ([]model.UserProductListInfo, error) {
 
-	//TODO: delete info log
 	log.WithFields(log.Fields{
 		"userId": userId,
-	}).Info("GetUserLists")
+	}).Debug("GetUserLists")
 
 	listInfo := make([]model.UserProductListInfo, 0)
 
@@ -61,8 +60,6 @@ func (u *UserList) GetUserLists(userId string) ([]model.UserProductListInfo, err
 		return listInfo, nil
 	}
 
-
-
 	return userLists.ProductLists, nil
 }
 
@@ -70,7 +67,7 @@ func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListI
 
 	productLists, err := u.GetUserLists(userId)
 
-	if err != nil{
+	if err != nil {
 		return fmt.Errorf("getting user information failed, %w", err)
 	}
 
@@ -81,9 +78,9 @@ func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListI
 	}
 
 	log.WithFields(log.Fields{
-		"userId": userId,
+		"userId":   userId,
 		"listName": listInfo.Name,
-	}).Info("List was linked")
+	}).Debug("List was linked")
 
 	return nil
 }
@@ -91,7 +88,7 @@ func (u *UserList) LinkListToUser(userId string, listInfo model.UserProductListI
 func (u *UserList) UpdateUserList(userId string, listInfo model.UserProductListInfo) error {
 
 	productLists, err := u.GetUserLists(userId)
-	if err != nil{
+	if err != nil {
 		return fmt.Errorf("getting user information failed, %w", err)
 	}
 
@@ -111,7 +108,7 @@ func (u *UserList) UpdateUserList(userId string, listInfo model.UserProductListI
 func (u *UserList) UnlinkListFromUser(userId string, listId string) error {
 	productLists, err := u.GetUserLists(userId)
 
-	if err != nil{
+	if err != nil {
 		return fmt.Errorf("getting user information failed, %w", err)
 	}
 
@@ -129,7 +126,7 @@ func (u *UserList) UnlinkListFromUser(userId string, listId string) error {
 	log.WithFields(log.Fields{
 		"userId": userId,
 		"listId": listId,
-	}).Info("List was unlinked")
+	}).Debug("List was unlinked")
 
 	return nil
 }

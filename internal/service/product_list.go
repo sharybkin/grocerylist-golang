@@ -86,18 +86,13 @@ func (p *ProductListService) UpdateProductList(userId string, listId string, req
 		return err
 	}
 
-	listForUpdate, err := p.repo.GetProductList(listId)
-	if err != nil {
-		return fmt.Errorf("cannot get list for update for user [%s], %w", userId, err)
-	}
+	request.Name = strings.Trim(request.Name, " ")
 
-	listForUpdate.Name = strings.Trim(request.Name, " ")
-
-	if err := p.repo.UpdateProductList(listForUpdate); err != nil {
+	if err := p.repo.UpdateProductList(listId, request); err != nil {
 		return fmt.Errorf("cannot update list info for user [%s], %w", userId, err)
 	}
 
-	listInfo := model.UserProductListInfo{Id: listId, Name: listForUpdate.Name}
+	listInfo := model.UserProductListInfo{Id: listId, Name: request.Name}
 	if err := p.userListService.UpdateUserList(userId, listInfo); err != nil {
 		return fmt.Errorf("cannot change linked list info for user [%s], %w", userId, err)
 	}

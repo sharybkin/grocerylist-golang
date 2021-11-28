@@ -17,7 +17,7 @@ type Authorization interface {
 type ProductList interface {
 	GetProductList(listId string) (model.ProductList, error)
 	CreateProductList(request model.ProductListRequest) (string, error)
-	UpdateProductList(list model.ProductList) error
+	UpdateProductList(listId string, request model.ProductListRequest) error
 	DeleteProductList(listId string) error
 
 	GetProducts(listId string) ([]model.Product, error)

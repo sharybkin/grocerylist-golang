@@ -64,27 +64,63 @@ func (p *ProductList) CreateProductList(request model.ProductListRequest) (strin
 		Products: map[string]model.Product{},
 	}
 
-	if err := p.createOrUpdateProductList(list); err != nil {
+	client, err := p.database.GetClient()
+
+	if err != nil {
+		return "", err
+	}
+
+	av, err := attributevalue.MarshalMap(list)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal Record, %w", err)
+	}
+
+	_, err = client.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: aws.String(productListsTable),
+		Item:      av,
+	})
+
+	if err != nil {
 		return "", fmt.Errorf("failed to put Record, %w", err)
 	}
 
 	log.WithFields(log.Fields{
 		"listName": request.Name,
-	}).Info("ProductList was added")
+	}).Debug("ProductList was added")
 
 	return list.Id, nil
 }
 
-func (p *ProductList) UpdateProductList(list model.ProductList) error {
-	//TODO: переделать на изменение, потому что значения уже есть
-	err := p.createOrUpdateProductList(list)
+func (p *ProductList) UpdateProductList(listId string, request model.ProductListRequest) error {
+	client, err := p.database.GetClient()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(productListsTable),
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: listId},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#name": "name",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":n": &types.AttributeValueMemberS{Value: request.Name},
+		},
+		UpdateExpression: aws.String("set #name = :n"),
+		ReturnValues:     types.ReturnValueUpdatedNew,
+	})
+
 	if err != nil {
 		return err
 	}
 
 	log.WithFields(log.Fields{
-		"listName": list.Name,
-	}).Info("ProductList was updated")
+		"listId":  listId,
+		"newName": request.Name,
+	}).Debug("ProductList was updated")
 
 	return nil
 }
@@ -109,27 +145,7 @@ func (p *ProductList) DeleteProductList(listId string) error {
 
 	log.WithFields(log.Fields{
 		"listId": listId,
-	}).Info("ProductList was deleted")
-
-	return nil
-}
-
-func (p *ProductList) createOrUpdateProductList(list model.ProductList) error {
-	client, err := p.database.GetClient()
-
-	if err != nil {
-		return err
-	}
-
-	av, err := attributevalue.MarshalMap(list)
-	if err != nil {
-		return fmt.Errorf("failed to marshal Record, %w", err)
-	}
-
-	_, err = client.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: aws.String(productListsTable),
-		Item:      av,
-	})
+	}).Debug("ProductList was deleted")
 
 	return nil
 }
