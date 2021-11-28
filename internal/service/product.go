@@ -9,12 +9,17 @@ import (
 )
 
 type ProductService struct {
-	repo            repository.ProductList
-	userListService *UserListService
+	repo                  repository.ProductList
+	userListService       *UserListService
+	productExampleService *ProductExampleService
 }
 
-func NewProductService(repo repository.ProductList, service *UserListService) *ProductService {
-	return &ProductService{repo: repo, userListService: service}
+func NewProductService(repo repository.ProductList, listService *UserListService, exampleService *ProductExampleService) *ProductService {
+	return &ProductService{
+		repo:                  repo,
+		userListService:       listService,
+		productExampleService: exampleService,
+	}
 }
 
 func (p *ProductService) GetAllProducts(userId string, listId string) ([]model.Product, error) {
@@ -49,6 +54,8 @@ func (p *ProductService) AddProduct(userId string, listId string, product model.
 	if err != nil {
 		return "", fmt.Errorf("failed to add product to list [%s] %w", listId, err)
 	}
+
+	p.productExampleService.UpdateUsageStatistic(product.Name)
 
 	log.WithFields(log.Fields{
 		"listId":  listId,

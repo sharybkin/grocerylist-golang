@@ -30,21 +30,29 @@ type Product interface {
 	DeleteProduct(userId string, listId string, productId string) error
 }
 
+type ProductExample interface {
+	GetProductExamples() []string
+	UpdateUsageStatistic(name string)
+}
+
 type ServicesHolder struct {
 	Authorization
 	ProductList
 	UserLists
 	Product
+	ProductExample
 }
 
 func NewService(repository *repository.Repository) *ServicesHolder {
 
 	userListService := NewUserListService(repository.UserList)
+	productExampleService := NewProductExampleService(repository.ProductExample)
 
 	return &ServicesHolder{
-		Authorization: NewAuthService(repository.Authorization),
-		ProductList:   NewProductListService(repository.ProductList, userListService),
-		UserLists:     userListService,
-		Product:       NewProductService(repository.ProductList, userListService),
+		Authorization:  NewAuthService(repository.Authorization),
+		ProductList:    NewProductListService(repository.ProductList, userListService),
+		UserLists:      userListService,
+		Product:        NewProductService(repository.ProductList, userListService, productExampleService),
+		ProductExample: productExampleService,
 	}
 }

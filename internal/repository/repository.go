@@ -32,10 +32,16 @@ type UserList interface {
 	UnlinkListFromUser(userId string, listId string) error
 }
 
+type ProductExample interface {
+	AddOrUpdate(example model.ProductExample) error
+	GetExamples() ([]model.ProductExample, error)
+}
+
 type Repository struct {
 	Authorization
 	ProductList
 	UserList
+	ProductExample
 }
 
 func NewRepository() *Repository {
@@ -46,8 +52,9 @@ func NewRepository() *Repository {
 	}
 
 	return &Repository{
-		Authorization: dynamorepo.NewAuth(dynamoDb),
-		ProductList:   dynamorepo.NewProductList(dynamoDb),
-		UserList:      dynamorepo.NewUserList(dynamoDb),
+		Authorization:  dynamorepo.NewAuth(dynamoDb),
+		ProductList:    dynamorepo.NewProductList(dynamoDb),
+		UserList:       dynamorepo.NewUserList(dynamoDb),
+		ProductExample: dynamorepo.NewProductExample(dynamoDb),
 	}
 }
