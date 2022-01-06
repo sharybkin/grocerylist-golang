@@ -21,9 +21,7 @@ func (h *Handler) getUserLists(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"productLists": listsInfo,
-	})
+	c.JSON(http.StatusOK, listsInfo)
 }
 
 func (h *Handler) updateProductList(c *gin.Context) {

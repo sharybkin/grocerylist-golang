@@ -52,6 +52,7 @@ func (p *ProductExampleService) updateUsageStatisticAsync(name string) {
 	var example model.ProductExample
 
 	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	example, ok := p.examples[name]
 
@@ -64,7 +65,7 @@ func (p *ProductExampleService) updateUsageStatisticAsync(name string) {
 
 	p.addOrUpdate(example)
 
-	p.mu.Unlock()
+
 
 	log.WithFields(log.Fields{
 		"name": name,
